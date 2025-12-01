@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Downloader - Download Videos from YouTube, Facebook, TikTok</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 0;
+        }
+        .feature-card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .platform-icon {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .loading-spinner {
+            display: none;
+        }
+        .progress-container {
+            display: none;
+        }
+        .download-complete {
+            display: none;
+        }
+        .error-message {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-download me-2"></i>Video Downloader
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#supported">Supported Platforms</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showDownloads()">My Downloads</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container text-center">
+            <h1 class="display-4 mb-4">Download Videos from Any Platform</h1>
+            <p class="lead mb-5">Support for YouTube, Facebook, TikTok, Instagram, and Twitter</p>
+
+            <!-- Download Form -->
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-body p-4">
+                            <form id="downloadForm">
+                                <div class="mb-3">
+                                    <label for="videoUrl" class="form-label">Video URL</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-link"></i>
+                                        </span>
+                                        <input type="url" class="form-control" id="videoUrl" placeholder="https://www.youtube.com/watch?v=..." required>
+                                    </div>
+                                    <div class="form-text">Paste the video URL from any supported platform</div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="platform" class="form-label">Platform</label>
+                                        <select class="form-select" id="platform" required>
+                                            <option value="">Select Platform</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="quality" class="form-label">Quality</label>
+                                        <select class="form-select" id="quality" required>
+                                            <option value="high">High (720p)</option>
+                                            <option value="highest">Highest Available</option>
+                                            <option value="medium">Medium (480p)</option>
+                                            <option value="low">Low (360p)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <span class="btn-text">
+                                        <i class="fas fa-download me-2"></i>Download Video
+                                    </span>
+                                    <span class="loading-spinner">
+                                        <span class="spinner-border spinner-border-sm me-2"></span>
+                                        Processing...
+                                    </span>
+                                </button>
+                            </form>
+
+                            <!-- Progress Bar -->
+                            <div class="progress-container mt-4">
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated"
+                                         role="progressbar" style="width: 0%" id="progressBar">
+                                        0%
+                                    </div>
+                                </div>
+                                <div class="text-center mt-2" id="progressText">Initializing...</div>
+                            </div>
+
+                            <!-- Download Complete -->
+                            <div class="download-complete mt-4 alert alert-success">
+                                <h5><i class="fas fa-check-circle me-2"></i>Download Complete!</h5>
+                                <p class="mb-2">Video downloaded successfully:</p>
+                                <div id="downloadInfo"></div>
+                                <button class="btn btn-success mt-2" id="downloadButton">
+                                    <i class="fas fa-download me-2"></i>Download File
+                                </button>
+                            </div>
+
+                            <!-- Error Message -->
+                            <div class="error-message mt-4 alert alert-danger">
+                                <h5><i class="fas fa-exclamation-triangle me-2"></i>Download Failed</h5>
+                                <p id="errorText"></p>
+                                <button class="btn btn-outline-danger" onclick="resetForm()">
+                                    <i class="fas fa-redo me-2"></i>Try Again
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Why Choose Our Video Downloader?</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center p-4">
+                        <div class="platform-icon text-primary">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4>Fast Downloads</h4>
+                        <p>Lightning-fast download speeds with optimized servers</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center p-4">
+                        <div class="platform-icon text-success">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <h4>Safe & Secure</h4>
+                        <p>Your downloads are secure and your privacy is protected</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card feature-card h-100 text-center p-4">
+                        <div class="platform-icon text-info">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h4>Multiple Formats</h4>
+                        <p>Support for various video qualities and formats</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Supported Platforms -->
+    <section id="supported" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Supported Platforms</h2>
+            <div class="row g-4">
+                <div class="col-md-2 col-6 text-center">
+                    <div class="platform-icon text-danger">
+                        <i class="fab fa-youtube"></i>
+                    </div>
+                    <h6>YouTube</h6>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="platform-icon text-primary">
+                        <i class="fab fa-facebook"></i>
+                    </div>
+                    <h6>Facebook</h6>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="platform-icon text-dark">
+                        <i class="fab fa-tiktok"></i>
+                    </div>
+                    <h6>TikTok</h6>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="platform-icon text-danger">
+                        <i class="fab fa-instagram"></i>
+                    </div>
+                    <h6>Instagram</h6>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="platform-icon text-info">
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                    <h6>Twitter</h6>
+                </div>
+                <div class="col-md-2 col-6 text-center">
+                    <div class="platform-icon text-success">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h6>More Coming</h6>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p class="mb-0">© 2024 Video Downloader. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Global variables
+        let currentDownloadId = null;
+        let progressInterval = null;
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSupportedPlatforms();
+        });
+
+        // Load supported platforms
+        async function loadSupportedPlatforms() {
+            try {
+                const response = await fetch('/api/platforms/');
+                const data = await response.json();
+                const platformSelect = document.getElementById('platform');
+
+                platformSelect.innerHTML = '<option value="">Select Platform</option>';
+                data.platforms.forEach(platform => {
+                    const option = document.createElement('option');
+                    option.value = platform.value;
+                    option.textContent = platform.label;
+                    platformSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading platforms:', error);
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('downloadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const url = document.getElementById('videoUrl').value;
+            const platform = document.getElementById('platform').value;
+            const quality = document.getElementById('quality').value;
+
+            if (!url || !platform) {
+                alert('Please enter a valid URL and select a platform');
+                return;
+            }
+
+            // Show loading state
+            showLoadingState();
+
+            try {
+                // First validate the URL
+                const validationResponse = await fetch('/api/validate-url/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({ url, platform })
+                });
+
+                const validationResult = await validationResponse.json();
+
+                if (!validationResponse.ok) {
+                    throw new Error(validationResult.error || 'Invalid URL');
+                }
+
+                // Start the download
+                const downloadResponse = await fetch('/api/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken'),
+                    },
+                    body: JSON.stringify({
+                        original_url: url,
+                        platform: platform,
+                        quality: quality
+                    })
+                });
+
+                const downloadResult = await downloadResponse.json();
+
+                if (!downloadResponse.ok) {
+                    throw new Error(downloadResult.error || 'Download failed');
+                }
+
+                // Store the download ID and start monitoring progress
+                currentDownloadId = downloadResult.id;
+                startProgressMonitoring();
+
+            } catch (error) {
+                showError(error.message);
+            }
+        });
+
+        // Show loading state
+        function showLoadingState() {
+            document.querySelector('.btn-text').style.display = 'none';
+            document.querySelector('.loading-spinner').style.display = 'inline-block';
+            document.getElementById('downloadForm').querySelector('button').disabled = true;
+
+            // Hide previous results
+            document.querySelector('.download-complete').style.display = 'none';
+            document.querySelector('.error-message').style.display = 'none';
+            document.querySelector('.progress-container').style.display = 'block';
+        }
+
+        // Show error state
+        function showError(message) {
+            document.querySelector('.loading-spinner').style.display = 'none';
+            document.querySelector('.btn-text').style.display = 'inline-block';
+            document.getElementById('downloadForm').querySelector('button').disabled = false;
+
+            document.querySelector('.progress-container').style.display = 'none';
+            document.querySelector('.error-message').style.display = 'block';
+            document.getElementById('errorText').textContent = message;
+        }
+
+        // Start progress monitoring
+        function startProgressMonitoring() {
+            progressInterval = setInterval(async function() {
+                if (!currentDownloadId) return;
+
+                try {
+                    const response = await fetch(`/api/${currentDownloadId}/`);
+                    const data = await response.json();
+
+                    updateProgress(data.progress_percentage, data.status);
+
+                    if (data.status === 'completed') {
+                        clearInterval(progressInterval);
+                        showDownloadComplete(data);
+                    } else if (data.status === 'failed') {
+                        clearInterval(progressInterval);
+                        showError(data.error_message || 'Download failed');
+                    }
+
+                } catch (error) {
+                    console.error('Error checking progress:', error);
+                }
+            }, 2000);
+        }
+
+        // Update progress bar
+        function updateProgress(percentage, status) {
+            const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+
+            progressBar.style.width = percentage + '%';
+            progressBar.textContent = percentage + '%';
+
+            const statusTexts = {
+                'pending': 'Initializing...',
+                'downloading': 'Downloading video...',
+                'completed': 'Processing complete!',
+                'failed': 'Download failed'
+            };
+
+            progressText.textContent = statusTexts[status] || 'Processing...';
+        }
+
+        // Show download complete
+        function showDownloadComplete(data) {
+            document.querySelector('.progress-container').style.display = 'none';
+            document.querySelector('.loading-spinner').style.display = 'none';
+            document.querySelector('.btn-text').style.display = 'inline-block';
+            document.getElementById('downloadForm').querySelector('button').disabled = false;
+
+            document.querySelector('.download-complete').style.display = 'block';
+
+            const downloadInfo = document.getElementById('downloadInfo');
+            downloadInfo.innerHTML = `
+                <strong>Video:</strong> ${data.video_title}<br>
+                <strong>Platform:</strong> ${data.platform_display}<br>
+                <strong>Quality:</strong> ${data.quality_display}<br>
+                <strong>File Size:</strong> ${data.file_size_mb} MB<br>
+                <strong>Format:</strong> ${data.file_format.toUpperCase()}
+            `;
+
+            // Set download button
+            const downloadButton = document.getElementById('downloadButton');
+            downloadButton.onclick = function() {
+                window.location.href = data.download_url;
+            };
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('downloadForm').reset();
+            document.querySelector('.loading-spinner').style.display = 'none';
+            document.querySelector('.btn-text').style.display = 'inline-block';
+            document.getElementById('downloadForm').querySelector('button').disabled = false;
+            document.querySelector('.progress-container').style.display = 'none';
+            document.querySelector('.error-message').style.display = 'none';
+            document.querySelector('.download-complete').style.display = 'none';
+
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+
+            currentDownloadId = null;
+        }
+
+        // Get CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Show downloads (placeholder for future functionality)
+        function showDownloads() {
+            alert('Download history feature coming soon!');
+        }
+
+        // Auto-detect platform from URL
+        document.getElementById('videoUrl').addEventListener('input', function() {
+            const url = this.value.toLowerCase();
+            const platformSelect = document.getElementById('platform');
+
+            if (url.includes('youtube.com') || url.includes('youtu.be')) {
+                platformSelect.value = 'youtube';
+            } else if (url.includes('facebook.com') || url.includes('fb.watch')) {
+                platformSelect.value = 'facebook';
+            } else if (url.includes('tiktok.com') || url.includes('vm.tiktok.com')) {
+                platformSelect.value = 'tiktok';
+            } else if (url.includes('instagram.com')) {
+                platformSelect.value = 'instagram';
+            } else if (url.includes('twitter.com') || url.includes('x.com')) {
+                platformSelect.value = 'twitter';
+            }
+        });
+    </script>
+</body>
+</html>
