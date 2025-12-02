@@ -50,14 +50,47 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 4. Environment Configuration
+### 4. Create Required Directories
+
+```bash
+# Create media directory for storing downloaded videos
+mkdir -p media/downloads
+
+# Create logs directory for application logs
+mkdir -p logs
+
+# Set proper permissions for media directory (Linux/Mac)
+chmod 755 media/
+chmod 755 media/downloads/
+```
+
+### 5. Environment Configuration
 
 ```bash
 cp .env.example .env
 # Edit .env file with your configuration
 ```
 
-### 5. Database Setup
+Edit the `.env` file with your database credentials and other settings:
+
+```env
+# Database Configuration
+DB_NAME=video_downloader_db
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_HOST=localhost
+DB_PORT=5432
+
+# Security
+SECRET_KEY=your-very-secret-key-here
+DEBUG=True
+
+# Media and Static Files
+MEDIA_ROOT=/path/to/your/project/media
+STATIC_ROOT=/path/to/your/project/staticfiles
+```
+
+### 6. Database Setup
 
 ```bash
 # Create PostgreSQL database
@@ -68,19 +101,19 @@ python manage.py makemigrations
 python manage.py migrate
 ```
 
-### 6. Create Superuser
+### 7. Create Superuser
 
 ```bash
 python manage.py createsuperuser
 ```
 
-### 7. Collect Static Files
+### 8. Collect Static Files
 
 ```bash
 python manage.py collectstatic
 ```
 
-### 8. Start Development Server
+### 9. Start Development Server
 
 ```bash
 python manage.py runserver
@@ -88,21 +121,38 @@ python manage.py runserver
 
 ## Configuration
 
-### Database Settings
+### Database and Media Settings
 
-Update the `settings.py` file with your PostgreSQL credentials:
+Update the `settings.py` file with your PostgreSQL credentials and media settings:
 
 ```python
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Database Configuration
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'video_downloader_db',
-        'USER': 'your_username',
-        'PASSWORD': 'your_password',
-        'HOST': 'localhost',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'video_downloader_db'),
+        'USER': os.getenv('DB_USER', 'your_username'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'your_password'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
+
+# Media and Static Files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Download settings
+DOWNLOAD_DIR = os.path.join(MEDIA_ROOT, 'downloads')
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100MB
 ```
 
 ### Platform Configuration
@@ -168,6 +218,7 @@ Video_Downloader/
 ├── requirements.txt
 ├── README.md
 ├── .env.example
+├── .env                    # Configuration file (create from .env.example)
 ├── video_downloader/
 │   ├── __init__.py
 │   ├── settings.py
@@ -186,11 +237,16 @@ Video_Downloader/
 ├── templates/
 │   └── downloader/
 │       └── home.html
-├── static/
+├── static/                 # Static files (CSS, JavaScript, images)
 │   ├── css/
-│   └── js/
-└── media/
-    └── downloads/
+│   ├── js/
+│   └── images/
+├── staticfiles/            # Collected static files (created by collectstatic)
+├── media/                  # User uploaded and downloaded files
+│   └── downloads/          # Downloaded video files stored here
+└── logs/                   # Application logs
+    ├── django.log
+    └── downloader.log
 ```
 
 ## Security Considerations
@@ -218,6 +274,32 @@ Video_Downloader/
 2. **Database Errors**: Verify PostgreSQL connection and permissions
 3. **File Permission Issues**: Ensure media directory has proper permissions
 4. **Platform-Specific Issues**: Check platform configurations and API limits
+5. **Media Directory Not Found**: Make sure `media/downloads/` directory exists and is writable
+6. **Static Files Not Loading**: Run `python manage.py collectstatic` after adding static files
+7. **Environment Variables Not Loading**: Ensure `.env` file is in the project root and properly formatted
+
+### Directory Setup Verification
+
+After installation, verify your directory structure:
+
+```bash
+# Check if media directory exists
+ls -la media/
+ls -la media/downloads/
+
+# Check if logs directory exists
+ls -la logs/
+
+# Check static files
+ls -la static/
+
+# Test Django can find media files
+python manage.py shell
+>>> from django.conf import settings
+>>> import os
+>>> print("Media root:", settings.MEDIA_ROOT)
+>>> print("Downloads dir exists:", os.path.exists(os.path.join(settings.MEDIA_ROOT, 'downloads')))
+```
 
 ### Logs
 
